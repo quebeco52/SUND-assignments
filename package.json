@@ -1,5 +1,27 @@
 {
+  "name": "sund-assignments",
+  "version": "1.0.0",
+  "description": "",
+  "homepage": "https://github.com/quebeco52/SUND-assignments#readme",
+  "bugs": {
+    "url": "https://github.com/quebeco52/SUND-assignments/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/quebeco52/SUND-assignments.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "express": "^5.2.1"
+  },
   "devDependencies": {
+    "@types/express": "^5.0.6",
     "tsx": "^4.23.13",
     "typescript": "^7.0.2"
   }

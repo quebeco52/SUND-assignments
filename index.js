@@ -1,48 +1,51 @@
 import express from "express";
 import dotenv from "dotenv";
-import { pool } from "./db.js";
+import sequelize from "./sequelize.js";
+import Book from "./models/Book.js";
 
 dotenv.config();
+
+async function testDatabaseConnection() {
+    try {
+        await sequelize.authenticate();
+        console.log("Database connection established successfully");
+    } catch (err) {
+        console.error("Unable to connect to the database:", err);
+    }
+}
+
+testDatabaseConnection();
 
 const app = express();
 
 app.use(express.json());
 
-// Skill 2
+
 app.get("/", (req, res) => {
     res.send("Welcome to the Library API! Access book routes at /books");
 });
 
 app.use(express.static("public"));
 
-// 4.
+
 app.get("/books", async (req, res) => {
-    const { genre, sort } = req.query;
-
-    const allowedSorts = ["title", "published_year", "genre"];
-    if (sort && !allowedSorts.includes(sort)) {
-        return res.status(400).json({
-            error: `Invalid sort field. Allowed values: ${allowedSorts.join(", ")}`,
-        });
-    }
-
     try {
-        let query = "SELECT * FROM books";
-        const queryParams = [];
+        const { genre, sort } = req.query;
+        const options = {
+            order: [["id", "ASC"]],
+        };
 
         if (genre) {
-            queryParams.push(genre);
-            query += ` WHERE genre = $${queryParams.length}`;
+            options.where = { genre };
         }
 
-        if (sort) {
-            query += ` ORDER BY ${sort} ASC`;
-        } else {
-            query += " ORDER BY id ASC";
+        const allowedSorts = ["title", "published_year", "genre"];
+        if (sort && allowedSorts.includes(sort)) {
+            options.order = [[sort, "ASC"]];
         }
 
-        const result = await pool.query(query, queryParams);
-        res.status(200).json(result.rows);
+        const books = await Book.findAll(options);
+        res.status(200).json(books);
     } catch (err) {
         console.error("Error fetching books:", err);
         res.status(500).json({ error: "Failed to fetch books" });
@@ -52,25 +55,21 @@ app.get("/books", async (req, res) => {
 app.get("/books/:id", async (req, res) => {
     const { id } = req.params;
 
-    if (!Number.isInteger(Number(id)) || Number(id) <= 0) {
-        return res.status(400).json({ error: "Invalid book ID. Must be an integer." });
-    }
 
     try {
-        const result = await pool.query("SELECT * FROM books WHERE id = $1", [id]);
+        const book = await Book.findByPk(id);
 
-        if (result.rows.length === 0) {
+        if (!book) {
             return res.status(404).json({ error: "Book not found" });
         }
-
-        res.status(200).json(result.rows[0]);
+        res.status(200).json(book);
     } catch (err) {
         console.error("Error fetching book:", err);
         res.status(500).json({ error: "Failed to fetch book" });
     }
 });
 
-// 6.
+
 app.post("/books", async (req, res) => {
     const { title, genre, published_year, author_id } = req.body;
 
@@ -79,18 +78,17 @@ app.post("/books", async (req, res) => {
     }
 
     try {
-        const result = await pool.query(
-            "INSERT INTO books (title, genre, published_year, author_id) VALUES ($1, $2, $3, $4) RETURNING *",
-            [title.trim(), genre || null, published_year || null, author_id ?? null]
-        );
+        const newBook = await Book.create({
+            title: title.trim(),
+            genre: genre || null,
+            published_year: published_year || null,
+            author_id: author_id ?? null,
+        });
 
-        res.status(201).json(result.rows[0]);
+        res.status(201).json(newBook);
     } catch (err) {
-        if (err.code === "23503") {
-            return res.status(400).json({ error: "Invalid author_id." });
-        }
-        console.error("Error adding book:", err);
-        res.status(500).json({ error: "Failed to add book" });
+        console.error("Error creating book:", err);
+        res.status(500).json({ error: "Failed to create book" });
     }
 });
 
@@ -98,34 +96,33 @@ app.put("/books/:id", async (req, res) => {
     const { id } = req.params;
     const { title, genre, published_year, author_id } = req.body;
 
-    if (!Number.isInteger(Number(id)) || Number(id) <= 0) {
-        return res.status(400).json({ error: "Must be an integer." });
-    }
     if (!title || typeof title !== "string" || title.trim() === "") {
         return res.status(400).json({ error: "Title is required" });
     }
 
     try {
-        const result = await pool.query(
-            "UPDATE books SET title = $1, genre = $2, published_year = $3, author_id = $4 WHERE id = $5 RETURNING *",
-            [title.trim(), genre || null, published_year || null, author_id ?? null, id]
-        );
+        const book = await Book.findByPk(id);
 
-        if (result.rowCount === 0) {
-            return res.status(404).json({ error: "Not found" });
+        // 404 check
+        if (!book) {
+            return res.status(404).json({ error: "Book not found" });
         }
 
-        res.status(200).json(result.rows[0]);
+        await book.update({
+            title: title.trim(),
+            genre: genre ?? book.genre,
+            published_year: published_year ?? book.published_year,
+            author_id: author_id ?? book.author_id,
+        });
+
+        res.status(200).json(book);
     } catch (err) {
-        if (err.code === "23503") {
-            return res.status(400).json({ error: "Invalid author_id." });
-        }
         console.error("Error updating book:", err);
         res.status(500).json({ error: "Failed to update book" });
     }
 });
 
-// 5.
+
 app.patch("/books/:id", async (req, res) => {
     const { id } = req.params;
 
@@ -153,7 +150,7 @@ app.patch("/books/:id", async (req, res) => {
     }
 
     try {
-        const result = await pool.query(
+        const [, result] = await sequelize.query(
             `UPDATE books
              SET title = COALESCE($1, title),
                  genre = COALESCE($2, genre),
@@ -161,13 +158,15 @@ app.patch("/books/:id", async (req, res) => {
                  author_id = COALESCE($4, author_id)
              WHERE id = $5
              RETURNING *`,
-            [
-                title !== undefined ? title.trim() : null,
-                genre !== undefined ? genre : null,
-                published_year !== undefined ? published_year : null,
-                author_id !== undefined ? author_id : null,
-                id,
-            ]
+            {
+                bind: [
+                    title !== undefined ? title.trim() : null,
+                    genre !== undefined ? genre : null,
+                    published_year !== undefined ? published_year : null,
+                    author_id !== undefined ? author_id : null,
+                    id,
+                ]
+            }
         );
 
         if (result.rowCount === 0) {
@@ -176,7 +175,7 @@ app.patch("/books/:id", async (req, res) => {
 
         res.status(200).json(result.rows[0]);
     } catch (err) {
-        if (err.code === "23503") {
+        if (err.parent?.code === "23503") {
             return res.status(400).json({ error: "Invalid author_id." });
         }
         console.error("Error updating book:", err);
@@ -187,31 +186,27 @@ app.patch("/books/:id", async (req, res) => {
 app.delete("/books/:id", async (req, res) => {
     const { id } = req.params;
 
-    if (!Number.isInteger(Number(id)) || Number(id) <= 0) {
-        return res.status(400).json({ error: "Must be an integer." });
-    }
-
     try {
-        const result = await pool.query(
-            "DELETE FROM books WHERE id = $1 RETURNING *",
-            [id]
-        );
+        const book = await Book.findByPk(id);
 
-        if (result.rowCount === 0) {
+        // 404 check
+        if (!book) {
             return res.status(404).json({ error: "Book not found" });
         }
 
-        res.status(200).json({ message: "Book deleted successfully", book: result.rows[0] });
+        await book.destroy();
+
+        res.status(200).json({ message: "Book deleted successfully", book });
     } catch (err) {
         console.error("Error deleting book:", err);
         res.status(500).json({ error: "Failed to delete book" });
     }
 });
 
-// 6.
+
 app.get("/authors", async (req, res) => {
     try {
-        const result = await pool.query("SELECT * FROM authors ORDER BY id ASC");
+        const [, result] = await sequelize.query("SELECT * FROM authors ORDER BY id ASC");
         res.status(200).json(result.rows);
     } catch (err) {
         console.error("Error fetching authors:", err);
@@ -227,7 +222,7 @@ app.get("/authors/:id", async (req, res) => {
     }
 
     try {
-        const result = await pool.query("SELECT * FROM authors WHERE id = $1", [id]);
+        const [, result] = await sequelize.query("SELECT * FROM authors WHERE id = $1", { bind: [id] });
 
         if (result.rows.length === 0) {
             return res.status(404).json({ error: "Author not found" });
@@ -248,9 +243,9 @@ app.post("/authors", async (req, res) => {
     }
 
     try {
-        const result = await pool.query(
+        const [, result] = await sequelize.query(
             "INSERT INTO authors (name) VALUES ($1) RETURNING *",
-            [name.trim()]
+            { bind: [name.trim()] }
         );
 
         res.status(201).json(result.rows[0]);
@@ -268,18 +263,18 @@ app.get("/authors/:id/books", async (req, res) => {
     }
 
     try {
-        const authorCheck = await pool.query("SELECT * FROM authors WHERE id = $1", [id]);
+        const [, authorCheck] = await sequelize.query("SELECT * FROM authors WHERE id = $1", { bind: [id] });
         if (authorCheck.rows.length === 0) {
             return res.status(404).json({ error: "Not found" });
         }
 
-        const result = await pool.query(
+        const [, result] = await sequelize.query(
             `SELECT books.*, authors.name AS author_name
              FROM books
              JOIN authors ON books.author_id = authors.id
              WHERE authors.id = $1
              ORDER BY books.id ASC`,
-            [id]
+            { bind: [id] }
         );
 
         res.status(200).json(result.rows);

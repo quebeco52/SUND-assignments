@@ -39,3 +39,8 @@ sequelize.sync() creates a table for each model that doesn't have one yet and le
 Plain SQL can be better for complex operations or for some operations that the friction of the ORM negatively effect performance.
 
 An ORM makes everything easier but does not have the same flexibility as raw SQL. It also is extra friction for an db operation with a extra step in between.
+
+
+## why does the loan date belong in the loans table, and not in books or members?
+
+Because this is an event that involves both a member and a book.

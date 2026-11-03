@@ -1,7 +1,7 @@
 import express from "express";
 import dotenv from "dotenv";
 import sequelize from "./sequelize.js";
-import Book from "./models/Book.js";
+import { Author, Book, Member, Loan } from "./models/index.js";
 
 dotenv.config();
 
@@ -33,6 +33,7 @@ app.get("/books", async (req, res) => {
         const { genre, sort } = req.query;
         const options = {
             order: [["id", "ASC"]],
+            include: { model: Author, attributes: ["name"] },
         };
 
         if (genre) {
@@ -263,23 +264,63 @@ app.get("/authors/:id/books", async (req, res) => {
     }
 
     try {
-        const [, authorCheck] = await sequelize.query("SELECT * FROM authors WHERE id = $1", { bind: [id] });
-        if (authorCheck.rows.length === 0) {
-            return res.status(404).json({ error: "Not found" });
+        const author = await Author.findByPk(id, {
+            include: Book,
+            order: [[Book, "id", "ASC"]],
+        });
+
+        if (!author) {
+            return res.status(404).json({ error: "Author not found" });
         }
 
-        const [, result] = await sequelize.query(
-            `SELECT books.*, authors.name AS author_name
-             FROM books
-             JOIN authors ON books.author_id = authors.id
-             WHERE authors.id = $1
-             ORDER BY books.id ASC`,
-            { bind: [id] }
-        );
-
-        res.status(200).json(result.rows);
+        res.status(200).json(author);
     } catch (err) {
         console.error("Error fetching author's books:", err);
+        res.status(500).json({ error: "Failed to fetch" });
+    }
+});
+
+app.post("/loans", async (req, res) => {
+    const { member_id, book_id } = req.body;
+
+    if (!Number.isInteger(member_id) || !Number.isInteger(book_id)) {
+        return res.status(400).json({ error: "member_id and book_id must be integers" });
+    }
+
+    try {
+        const loan = await Loan.create({ member_id, book_id });
+        res.status(201).json(loan);
+    } catch (err) {
+        if (err.parent?.code === "23503") {
+            return res.status(400).json({ error: "Invalid member_id or book_id." });
+        }
+        console.error("Error creating loan:", err);
+        res.status(500).json({ error: "Failed to create loan" });
+    }
+});
+
+app.get("/members/:id/loans", async (req, res) => {
+    const { id } = req.params;
+
+    if (!Number.isInteger(Number(id)) || Number(id) <= 0) {
+        return res.status(400).json({ error: "Must be an integer." });
+    }
+
+    try {
+        const member = await Member.findByPk(id, {
+            include: {
+                model: Book,
+                through: { attributes: ["loan_date", "returned_at"] },
+            },
+        });
+
+        if (!member) {
+            return res.status(404).json({ error: "Member not found" });
+        }
+
+        res.status(200).json(member);
+    } catch (err) {
+        console.error("Error fetching member's loans:", err);
         res.status(500).json({ error: "Failed to fetch" });
     }
 });

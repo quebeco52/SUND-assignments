@@ -27,3 +27,19 @@ export const checkOutBook = (book: unknown): number => {
     }
     return Math.floor(Math.random() * 9000) + 1000;
 };
+
+export const LoanSchema = z.object({
+    loanId: z.number().int().positive(),
+    title: BookTitleSchema,
+    memberId: z.number().int().positive(),
+});
+
+export type Loan = z.infer<typeof LoanSchema>;
+
+export const registerLoan = (
+    loanId: unknown,
+    title: unknown,
+    memberId: unknown
+): Loan => {
+    return LoanSchema.parse({ loanId, title, memberId });
+};

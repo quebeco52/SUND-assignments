@@ -1,5 +1,5 @@
 import { describe, test, expect } from "vitest";
-import { findBook, checkOutBook } from "./library";
+import { findBook, checkOutBook, registerLoan } from "./library";
 
 describe("Library Unit Tests", () => {
     describe("findBook", () => {
@@ -51,6 +51,25 @@ describe("Library Unit Tests", () => {
 
         test("it throws for an object without copiesAvailable", () => {
             expect(() => checkOutBook({ title: "dune" })).toThrow();
+        });
+    });
+
+    describe("registerLoan", () => {
+        test("registerLoan(1234, 'dune', 7) returns correct loan object", () => {
+            const loan = registerLoan(1234, "dune", 7);
+            expect(loan).toEqual({
+                loanId: 1234,
+                title: "dune",
+                memberId: 7,
+            });
+        });
+
+        test("it throws when memberId is 0", () => {
+            expect(() => registerLoan(1234, "dune", 0)).toThrow();
+        });
+
+        test("it throws when the title is not in the catalogue", () => {
+            expect(() => registerLoan(1234, "harry potter", 7)).toThrow();
         });
     });
 });

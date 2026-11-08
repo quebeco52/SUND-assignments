@@ -8,6 +8,12 @@ describe("Pizza Shop Unit Tests", () => {
         expect(pizza).toEqual({ type: "margherita", price: 100 });
     });
 
+    test("createPizza accepts vegetarian", () => {
+        const pizza = createPizza("vegetarian");
+
+        expect(pizza).toEqual({ type: "vegetarian", price: 110 });
+    });
+
     test("createPizza throws for unknown type", () => {
         expect(() => createPizza("hawaii")).toThrow();
     });

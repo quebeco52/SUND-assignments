@@ -1,46 +1,43 @@
-## 1.
+# Assignment Answers
 
-Sequelize translates between JavaScript and SQL. So manual SQL string building is not needed. 
+## Exercise 1
 
-## 2.
+## Step 3
 
-ORM stands for Object Relational Mapping. The object part is the different type of objects in the program and mapping is rules that connects the different objects to a database. Relational refers to the relational database.
+The schema that stopped it was PizzaSchema. TypeScript type checking happens at compile time, whereas Zod performs runtime data validation on actual values as the code executes.
 
-## 3.
+## Step 5
 
-
-`Book.findAll()`:
-
-```sql
-SELECT "id", "title", "genre", "publishedYear", "createdAt", "updatedAt"
-FROM "Books" AS "Book";
-```
-
-`Book.findByPk(3)`:
-
-```sql
-SELECT "id", "title", "genre", "publishedYear", "createdAt", "updatedAt"
-FROM "Books" AS "Book"
-WHERE "Book"."id" = 3;
-```
-
-## 4.
-- host is were the db is running for example localhost.
-- port is the port number the database is listening on.
-- dialect tells Sequelize which kind of database it is talking to.
-- logging tells Sequelize to print the SQL it generates.
-
-## 5.
-
-sequelize.sync() creates a table for each model that doesn't have one yet and leaves existing tables alone. sync({ force: true }) drops every table and recreates them empty, which deletes all the rows, database with real data would wipe everything.
-
-## 6.
-
-Plain SQL can be better for complex operations or for some operations that the friction of the ORM negatively effect performance.
-
-An ORM makes everything easier but does not have the same flexibility as raw SQL. It also is extra friction for an db operation with a extra step in between.
+It belongs in pizzashop.integration.test.ts. This is because `orderPizza` is an orchestrator function, making it an integration test.
 
 
-## why does the loan date belong in the loans table, and not in books or members?
 
-Because this is an event that involves both a member and a book.
+## Exercise 2
+
+
+The bug was a typo in the error message: `"cutomer"` instead of `"customer"`.
+
+It shows that just checking if code throws isn't enough. You need to test the exact message, otherwise typos or completely wrong errors can slip through.
+
+
+
+## Exercise 3
+
+In JavaScript and Vitest, `toBe` checks referential identity, `toEqual` performs deep equality inspection.
+
+
+
+
+## Exercise 5
+
+
+Yes, a single test run can pass by luck
+
+To make the test more trustworthy we could mock up math.random, so it is not random
+
+
+
+## Exercise 6
+
+Errors automatically go up through the call stack. When an inner function like checkOutBook throws, it travels up to borrowBook and halts execution unless caught.
+

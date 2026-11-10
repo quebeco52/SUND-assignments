@@ -23,3 +23,20 @@ Stack Trace & Source Code, Breadcrumbs, HTTP Request, Runtime & System Informati
 
 nothing is sent to Sentry because Express looks forward down the middleware chain for error-handling middleware, Express cant look backwards.
 
+# Why didn't the errors inside your try/catch reach setupExpressErrorHandler by themselves?
+
+When an error occurs inside a try/catch block, JavaScript catches it.
+
+# Several requests failed for the same reason. Did Sentry show them as separate issues, or group them? Why is that useful?
+
+Sentry grouped them together into a single issue. It stops you from being spammed.
+
+# Explain the difference between a breadcrumb and a tag in your own words. Give one example of when each one would help your team.
+
+- Breadcrumb: A trail of events leading up to the error. Example: Seeing the exact way a user interacts before error occurs.
+- Tag: A key-value label connected to an error. Example: Tagging errors with feature:books or feature:authors so you can easily find the place of the error.
+
+# You now send each error to Sentry. What does each tool give you that the other doesn't?
+
+- Console: Fast feedback in the terminal during development.
+- Sentry: Centralized error handling.

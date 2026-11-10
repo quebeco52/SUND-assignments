@@ -4,6 +4,7 @@ import express from "express";
 import dotenv from "dotenv";
 import sequelize from "./sequelize.js";
 import { Author, Book, Member, Loan } from "./models/index.js";
+import { reportError } from "./utils/reportError.js";
 
 dotenv.config();
 
@@ -56,7 +57,7 @@ app.get("/books", async (req, res) => {
         const books = await Book.findAll(options);
         res.status(200).json(books);
     } catch (err) {
-        Sentry.captureException(err);
+        reportError(err, "books");
         console.error("Error fetching books:", err);
         res.status(500).json({ error: "Failed to fetch books" });
     }
@@ -79,7 +80,7 @@ app.get("/books/:id", async (req, res) => {
         }
         res.status(200).json(book);
     } catch (err) {
-        Sentry.captureException(err);
+        reportError(err, "books");
         console.error("Error fetching book:", err);
         res.status(500).json({ error: "Failed to fetch book" });
     }
@@ -108,7 +109,7 @@ app.post("/books", async (req, res) => {
 
         res.status(201).json(newBook);
     } catch (err) {
-        Sentry.captureException(err);
+        reportError(err, "books");
         console.error("Error creating book:", err);
         res.status(500).json({ error: "Failed to create book" });
     }
@@ -144,7 +145,7 @@ app.put("/books/:id", async (req, res) => {
 
         res.status(200).json(book);
     } catch (err) {
-        Sentry.captureException(err);
+        reportError(err, "books");
         console.error("Error updating book:", err);
         res.status(500).json({ error: "Failed to update book" });
     }
@@ -208,7 +209,7 @@ app.patch("/books/:id", async (req, res) => {
 
         res.status(200).json(result.rows[0]);
     } catch (err) {
-        Sentry.captureException(err);
+        reportError(err, "books");
         if (err.parent?.code === "23503") {
             return res.status(400).json({ error: "Invalid author_id." });
         }
@@ -237,7 +238,7 @@ app.delete("/books/:id", async (req, res) => {
 
         res.status(200).json({ message: "Book deleted successfully", book });
     } catch (err) {
-        Sentry.captureException(err);
+        reportError(err, "books");
         console.error("Error deleting book:", err);
         res.status(500).json({ error: "Failed to delete book" });
     }
@@ -255,7 +256,7 @@ app.get("/authors", async (req, res) => {
         const [, result] = await sequelize.query("SELECT * FROM authors ORDER BY id ASC");
         res.status(200).json(result.rows);
     } catch (err) {
-        Sentry.captureException(err);
+        reportError(err, "authors");
         console.error("Error fetching authors:", err);
         res.status(500).json({ error: "Failed to fetch authors" });
     }
@@ -282,7 +283,7 @@ app.get("/authors/:id", async (req, res) => {
 
         res.status(200).json(result.rows[0]);
     } catch (err) {
-        Sentry.captureException(err);
+        reportError(err, "authors");
         console.error("Error fetching author:", err);
         res.status(500).json({ error: "Failed to fetch author" });
     }
@@ -308,7 +309,7 @@ app.post("/authors", async (req, res) => {
 
         res.status(201).json(result.rows[0]);
     } catch (err) {
-        Sentry.captureException(err);
+        reportError(err, "authors");
         console.error("Error adding author:", err);
         res.status(500).json({ error: "Failed to add author" });
     }
@@ -338,7 +339,7 @@ app.get("/authors/:id/books", async (req, res) => {
 
         res.status(200).json(author);
     } catch (err) {
-        Sentry.captureException(err);
+        reportError(err, "authors");
         console.error("Error fetching author's books:", err);
         res.status(500).json({ error: "Failed to fetch" });
     }
@@ -360,7 +361,7 @@ app.post("/loans", async (req, res) => {
         const loan = await Loan.create({ member_id, book_id });
         res.status(201).json(loan);
     } catch (err) {
-        Sentry.captureException(err);
+        reportError(err, "loans");
         if (err.parent?.code === "23503") {
             return res.status(400).json({ error: "Invalid member_id or book_id." });
         }
@@ -395,7 +396,7 @@ app.get("/members/:id/loans", async (req, res) => {
 
         res.status(200).json(member);
     } catch (err) {
-        Sentry.captureException(err);
+        reportError(err, "members");
         console.error("Error fetching member's loans:", err);
         res.status(500).json({ error: "Failed to fetch" });
     }

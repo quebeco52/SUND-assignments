@@ -1,4 +1,5 @@
 import "./instrument.js";
+import * as Sentry from "@sentry/node";
 import express from "express";
 import dotenv from "dotenv";
 import sequelize from "./sequelize.js";
@@ -325,6 +326,13 @@ app.get("/members/:id/loans", async (req, res) => {
         res.status(500).json({ error: "Failed to fetch" });
     }
 });
+
+
+app.get("/debug-sentry", (req, res) => {
+    throw new Error("My first Sentry error!");
+});
+
+Sentry.setupExpressErrorHandler(app);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

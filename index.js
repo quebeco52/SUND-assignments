@@ -31,6 +31,12 @@ app.use(express.static("public"));
 
 
 app.get("/books", async (req, res) => {
+    Sentry.setTag("feature", "books");
+    Sentry.addBreadcrumb({
+        message: "Fetch books route",
+        level: "info",
+    });
+
     try {
         const { genre, sort } = req.query;
         const options = {
@@ -50,12 +56,18 @@ app.get("/books", async (req, res) => {
         const books = await Book.findAll(options);
         res.status(200).json(books);
     } catch (err) {
+        Sentry.captureException(err);
         console.error("Error fetching books:", err);
         res.status(500).json({ error: "Failed to fetch books" });
     }
 });
 
 app.get("/books/:id", async (req, res) => {
+    Sentry.setTag("feature", "books");
+    Sentry.addBreadcrumb({
+        message: `Fetch book with ID ${req.params.id}`,
+        level: "info",
+    });
     const { id } = req.params;
 
 
@@ -67,6 +79,7 @@ app.get("/books/:id", async (req, res) => {
         }
         res.status(200).json(book);
     } catch (err) {
+        Sentry.captureException(err);
         console.error("Error fetching book:", err);
         res.status(500).json({ error: "Failed to fetch book" });
     }
@@ -74,6 +87,11 @@ app.get("/books/:id", async (req, res) => {
 
 
 app.post("/books", async (req, res) => {
+    Sentry.setTag("feature", "books");
+    Sentry.addBreadcrumb({
+        message: "Create book route",
+        level: "info",
+    });
     const { title, genre, published_year, author_id } = req.body;
 
     if (!title || typeof title !== "string" || title.trim() === "") {
@@ -90,12 +108,18 @@ app.post("/books", async (req, res) => {
 
         res.status(201).json(newBook);
     } catch (err) {
+        Sentry.captureException(err);
         console.error("Error creating book:", err);
         res.status(500).json({ error: "Failed to create book" });
     }
 });
 
 app.put("/books/:id", async (req, res) => {
+    Sentry.setTag("feature", "books");
+    Sentry.addBreadcrumb({
+        message: `Replace book with ID ${req.params.id}`,
+        level: "info",
+    });
     const { id } = req.params;
     const { title, genre, published_year, author_id } = req.body;
 
@@ -120,6 +144,7 @@ app.put("/books/:id", async (req, res) => {
 
         res.status(200).json(book);
     } catch (err) {
+        Sentry.captureException(err);
         console.error("Error updating book:", err);
         res.status(500).json({ error: "Failed to update book" });
     }
@@ -127,6 +152,11 @@ app.put("/books/:id", async (req, res) => {
 
 
 app.patch("/books/:id", async (req, res) => {
+    Sentry.setTag("feature", "books");
+    Sentry.addBreadcrumb({
+        message: `Update book with ID ${req.params.id}`,
+        level: "info",
+    });
     const { id } = req.params;
 
     if (!Number.isInteger(Number(id)) || Number(id) <= 0) {
@@ -178,6 +208,7 @@ app.patch("/books/:id", async (req, res) => {
 
         res.status(200).json(result.rows[0]);
     } catch (err) {
+        Sentry.captureException(err);
         if (err.parent?.code === "23503") {
             return res.status(400).json({ error: "Invalid author_id." });
         }
@@ -187,6 +218,11 @@ app.patch("/books/:id", async (req, res) => {
 });
 
 app.delete("/books/:id", async (req, res) => {
+    Sentry.setTag("feature", "books");
+    Sentry.addBreadcrumb({
+        message: `Delete book with ID ${req.params.id}`,
+        level: "info",
+    });
     const { id } = req.params;
 
     try {
@@ -201,6 +237,7 @@ app.delete("/books/:id", async (req, res) => {
 
         res.status(200).json({ message: "Book deleted successfully", book });
     } catch (err) {
+        Sentry.captureException(err);
         console.error("Error deleting book:", err);
         res.status(500).json({ error: "Failed to delete book" });
     }
@@ -208,16 +245,28 @@ app.delete("/books/:id", async (req, res) => {
 
 
 app.get("/authors", async (req, res) => {
+    Sentry.setTag("feature", "authors");
+    Sentry.addBreadcrumb({
+        message: "Fetch authors route",
+        level: "info",
+    });
+
     try {
         const [, result] = await sequelize.query("SELECT * FROM authors ORDER BY id ASC");
         res.status(200).json(result.rows);
     } catch (err) {
+        Sentry.captureException(err);
         console.error("Error fetching authors:", err);
         res.status(500).json({ error: "Failed to fetch authors" });
     }
 });
 
 app.get("/authors/:id", async (req, res) => {
+    Sentry.setTag("feature", "authors");
+    Sentry.addBreadcrumb({
+        message: `Fetch author with ID ${req.params.id}`,
+        level: "info",
+    });
     const { id } = req.params;
 
     if (!Number.isInteger(Number(id)) || Number(id) <= 0) {
@@ -233,12 +282,18 @@ app.get("/authors/:id", async (req, res) => {
 
         res.status(200).json(result.rows[0]);
     } catch (err) {
+        Sentry.captureException(err);
         console.error("Error fetching author:", err);
         res.status(500).json({ error: "Failed to fetch author" });
     }
 });
 
 app.post("/authors", async (req, res) => {
+    Sentry.setTag("feature", "authors");
+    Sentry.addBreadcrumb({
+        message: "Create author route",
+        level: "info",
+    });
     const { name } = req.body;
 
     if (!name || typeof name !== "string" || name.trim() === "") {
@@ -253,12 +308,18 @@ app.post("/authors", async (req, res) => {
 
         res.status(201).json(result.rows[0]);
     } catch (err) {
+        Sentry.captureException(err);
         console.error("Error adding author:", err);
         res.status(500).json({ error: "Failed to add author" });
     }
 });
 
 app.get("/authors/:id/books", async (req, res) => {
+    Sentry.setTag("feature", "authors");
+    Sentry.addBreadcrumb({
+        message: `Fetch books for author ${req.params.id}`,
+        level: "info",
+    });
     const { id } = req.params;
 
     if (!Number.isInteger(Number(id)) || Number(id) <= 0) {
@@ -277,12 +338,18 @@ app.get("/authors/:id/books", async (req, res) => {
 
         res.status(200).json(author);
     } catch (err) {
+        Sentry.captureException(err);
         console.error("Error fetching author's books:", err);
         res.status(500).json({ error: "Failed to fetch" });
     }
 });
 
 app.post("/loans", async (req, res) => {
+    Sentry.setTag("feature", "loans");
+    Sentry.addBreadcrumb({
+        message: "Create loan route",
+        level: "info",
+    });
     const { member_id, book_id } = req.body;
 
     if (!Number.isInteger(member_id) || !Number.isInteger(book_id)) {
@@ -293,6 +360,7 @@ app.post("/loans", async (req, res) => {
         const loan = await Loan.create({ member_id, book_id });
         res.status(201).json(loan);
     } catch (err) {
+        Sentry.captureException(err);
         if (err.parent?.code === "23503") {
             return res.status(400).json({ error: "Invalid member_id or book_id." });
         }
@@ -302,6 +370,11 @@ app.post("/loans", async (req, res) => {
 });
 
 app.get("/members/:id/loans", async (req, res) => {
+    Sentry.setTag("feature", "members");
+    Sentry.addBreadcrumb({
+        message: `Fetch loans for member ${req.params.id}`,
+        level: "info",
+    });
     const { id } = req.params;
 
     if (!Number.isInteger(Number(id)) || Number(id) <= 0) {
@@ -322,6 +395,7 @@ app.get("/members/:id/loans", async (req, res) => {
 
         res.status(200).json(member);
     } catch (err) {
+        Sentry.captureException(err);
         console.error("Error fetching member's loans:", err);
         res.status(500).json({ error: "Failed to fetch" });
     }

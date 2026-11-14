@@ -1,42 +1,48 @@
-# Why must instrument.js be imported before everything else?
+## What does docker ps show you? Which columns tell you that SonarQube is running, and on which port?
 
-Sentry works in the Node.js core modules, so it has to be loaded first so it can hook into the other modules and catch errors.
+It shows me the ruining containers 
+8fa998e34f29   sonarqube               "/opt/sonarqube/dock…"   2 minutes ago   Up 2 minutes   0.0.0.0:9000->9000/tcp, [::]:9000->9000/tcp        my-sonarqube
 
+## Why run SonarQube in Docker instead of installing it directly on your computer?
+Well because it now can be reused if you wanna create a new dev env, It also make a stand alone app that don't have to interact with the underlying host
 
-# Why do we keep the DSN in .env instead of in the code?
-
-because it contains a secret.
-
-# Issue Details (from your dashboard for /debug-sentry)
-
-File and line number: index.js:332:11
-Node.js version: node v27.0.0-alpha.0.0.0
-Operating system: Arch Linux "rolling"
-Environment: production
+## Did your project pass or fail the quality gate? How many issues did SonarQube find?
+Pass one issue
 
 
-# You didn't add any extra information to this error yourself. List everything Sentry recorded anyway:
+## Issue: Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator.
 
-Stack Trace & Source Code, Breadcrumbs, HTTP Request, Runtime & System Information, Event Metadata
+### File & Line: index.js, line 20
 
-# What happened when the handler was above the routes, and why?
+testDatabaseConnection is an async function, so calling it always return a promise
+On line 20, testDatabaseConnection() is called without anything to handle the promise
 
-nothing is sent to Sentry because Express looks forward down the middleware chain for error-handling middleware, Express cant look backwards.
 
-# Why didn't the errors inside your try/catch reach setupExpressErrorHandler by themselves?
+await testDatabaseConnection();
 
-When an error occurs inside a try/catch block, JavaScript catches it.
+testDatabaseConnection().catch((err) => {
+    console.error("Database connection check failed:", err);
+});
 
-# Several requests failed for the same reason. Did Sentry show them as separate issues, or group them? Why is that useful?
 
-Sentry grouped them together into a single issue. It stops you from being spammed.
+## whether you agree that it's a problem, and why:
+well it is a bug to not include a await, but it is already wrapping it's body in a try/catch, so it is not that big of a deal
 
-# Explain the difference between a breadcrumb and a tag in your own words. Give one example of when each one would help your team.
 
-- Breadcrumb: A trail of events leading up to the error. Example: Seeing the exact way a user interacts before error occurs.
-- Tag: A key-value label connected to an error. Example: Tagging errors with feature:books or feature:authors so you can easily find the place of the error.
 
-# You now send each error to Sentry. What does each tool give you that the other doesn't?
+## Question: Depending on the version, SonarQube groups issues either by the quality they affect (Security, Reliability, Maintainability) or by type (Vulnerability, Bug, Code Smell). Explain each of the three groups your SonarQube uses, with an example:
 
-- Console: Fast feedback in the terminal during development.
-- Sentry: Centralized error handling.
+Security: Code that makes your code vulnerable to malicious actors. example: hardcoded API keys
+
+Reliability: Bugs or risky logic that can create unintended consequences. example: async function without await
+
+Maintainability: Code that works, but is not easy to read, understand or test. example Duplicated code blocks across routes or unused variables
+
+
+
+## Question: SonarQube, your tests and Sentry all help you find problems. What does each one find that the others can't?
+SonarQube: Finds structural, style, and security/reliability problems without ruining the code
+
+Tests: Finds logic bugs that don't crash the code
+
+Sentry: Finds real world production failures

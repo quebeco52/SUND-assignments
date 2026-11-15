@@ -14,6 +14,14 @@ const app = express();
 
 app.use(express.json());
 
+function validatePositiveIntId(req, res, next) {
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id) || id <= 0) {
+        return res.status(400).json({ error: "Must be an integer." });
+    }
+    next();
+}
+
 
 app.get("/", (req, res) => {
     res.send("Welcome to the Library API! Access book routes at /books");
@@ -143,17 +151,13 @@ app.put("/books/:id", async (req, res) => {
 });
 
 
-app.patch("/books/:id", async (req, res) => {
+app.patch("/books/:id", validatePositiveIntId, async (req, res) => {
     Sentry.setTag("feature", "books");
     Sentry.addBreadcrumb({
         message: `Update book with ID ${req.params.id}`,
         level: "info",
     });
     const { id } = req.params;
-
-    if (!Number.isInteger(Number(id)) || Number(id) <= 0) {
-        return res.status(400).json({ error: "Must be an integer." });
-    }
 
     if (!req.body || typeof req.body !== "object" || Object.keys(req.body).length === 0) {
         return res.status(400).json({ error: "Empty body" });
@@ -253,17 +257,13 @@ app.get("/authors", async (req, res) => {
     }
 });
 
-app.get("/authors/:id", async (req, res) => {
+app.get("/authors/:id", validatePositiveIntId, async (req, res) => {
     Sentry.setTag("feature", "authors");
     Sentry.addBreadcrumb({
         message: `Fetch author with ID ${req.params.id}`,
         level: "info",
     });
     const { id } = req.params;
-
-    if (!Number.isInteger(Number(id)) || Number(id) <= 0) {
-        return res.status(400).json({ error: "Must be an integer." });
-    }
 
     try {
         const [, result] = await sequelize.query("SELECT * FROM authors WHERE id = $1", { bind: [id] });
@@ -306,17 +306,13 @@ app.post("/authors", async (req, res) => {
     }
 });
 
-app.get("/authors/:id/books", async (req, res) => {
+app.get("/authors/:id/books", validatePositiveIntId, async (req, res) => {
     Sentry.setTag("feature", "authors");
     Sentry.addBreadcrumb({
         message: `Fetch books for author ${req.params.id}`,
         level: "info",
     });
     const { id } = req.params;
-
-    if (!Number.isInteger(Number(id)) || Number(id) <= 0) {
-        return res.status(400).json({ error: "Must be an integer." });
-    }
 
     try {
         const author = await Author.findByPk(id, {
@@ -361,17 +357,13 @@ app.post("/loans", async (req, res) => {
     }
 });
 
-app.get("/members/:id/loans", async (req, res) => {
+app.get("/members/:id/loans", validatePositiveIntId, async (req, res) => {
     Sentry.setTag("feature", "members");
     Sentry.addBreadcrumb({
         message: `Fetch loans for member ${req.params.id}`,
         level: "info",
     });
     const { id } = req.params;
-
-    if (!Number.isInteger(Number(id)) || Number(id) <= 0) {
-        return res.status(400).json({ error: "Must be an integer." });
-    }
 
     try {
         const member = await Member.findByPk(id, {

@@ -17,6 +17,7 @@ const mockSequelize = {
 
 vi.mock("../sequelize.js", () => ({
     default: mockSequelize,
+    connectToDatabase: vi.fn().mockResolvedValue(undefined),
 }));
 
 const mockAuthor = { findByPk: vi.fn() };

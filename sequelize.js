@@ -21,13 +21,13 @@ const sequelize = new Sequelize(
   }
 );
 
-sequelize
-  .authenticate()
-  .then(() => {
+export async function connectToDatabase() {
+  try {
+    await sequelize.authenticate();
     console.log("Connected to PostgreSQL");
-  })
-  .catch((err) => {
-    console.error("Unable to connect ", err.message);
-  });
+  } catch (err) {
+    console.error("Unable to connect to the database:", err);
+  }
+}
 
 export default sequelize;

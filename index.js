@@ -2,22 +2,13 @@ import "./instrument.js";
 import * as Sentry from "@sentry/node";
 import express from "express";
 import dotenv from "dotenv";
-import sequelize from "./sequelize.js";
+import sequelize, { connectToDatabase } from "./sequelize.js";
 import { Author, Book, Member, Loan } from "./models/index.js";
 import { reportError } from "./utils/reportError.js";
 
 dotenv.config();
 
-async function testDatabaseConnection() {
-    try {
-        await sequelize.authenticate();
-        console.log("Database connection established successfully");
-    } catch (err) {
-        console.error("Unable to connect to the database:", err);
-    }
-}
-
-testDatabaseConnection();
+await connectToDatabase();
 
 const app = express();
 

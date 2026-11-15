@@ -22,6 +22,10 @@ function validatePositiveIntId(req, res, next) {
     next();
 }
 
+function isNonEmptyString(value) {
+    return typeof value === "string" && value.trim().length > 0;
+}
+
 
 app.get("/", (req, res) => {
     res.send("Welcome to the Library API! Access book routes at /books");
@@ -94,7 +98,7 @@ app.post("/books", async (req, res) => {
     });
     const { title, genre, published_year, author_id } = req.body;
 
-    if (!title || typeof title !== "string" || title.trim() === "") {
+    if (!isNonEmptyString(title)) {
         return res.status(400).json({ error: "Title is required" });
     }
 
@@ -123,7 +127,7 @@ app.put("/books/:id", async (req, res) => {
     const { id } = req.params;
     const { title, genre, published_year, author_id } = req.body;
 
-    if (!title || typeof title !== "string" || title.trim() === "") {
+    if (!isNonEmptyString(title)) {
         return res.status(400).json({ error: "Title is required" });
     }
 
@@ -174,7 +178,7 @@ app.patch("/books/:id", validatePositiveIntId, async (req, res) => {
         return res.status(400).json({ error: "At least one field must be provided" });
     }
 
-    if (title !== undefined && (typeof title !== "string" || title.trim() === "")) {
+    if (title !== undefined && !isNonEmptyString(title)) {
         return res.status(400).json({ error: "Title cannot be empty" });
     }
 
@@ -288,7 +292,7 @@ app.post("/authors", async (req, res) => {
     });
     const { name } = req.body;
 
-    if (!name || typeof name !== "string" || name.trim() === "") {
+    if (!isNonEmptyString(name)) {
         return res.status(400).json({ error: "Name is required" });
     }
 

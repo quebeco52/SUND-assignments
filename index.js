@@ -26,6 +26,15 @@ function isNonEmptyString(value) {
     return typeof value === "string" && value.trim().length > 0;
 }
 
+function trackFeature(feature, getMessage) {
+    return (req, _res, next) => {
+        Sentry.setTag("feature", feature);
+        const message = typeof getMessage === "function" ? getMessage(req) : getMessage;
+        Sentry.addBreadcrumb({ message, level: "info" });
+        next();
+    };
+}
+
 
 app.get("/", (req, res) => {
     res.send("Welcome to the Library API! Access book routes at /books");
@@ -34,13 +43,7 @@ app.get("/", (req, res) => {
 app.use(express.static("public"));
 
 
-app.get("/books", async (req, res) => {
-    Sentry.setTag("feature", "books");
-    Sentry.addBreadcrumb({
-        message: "Fetch books route",
-        level: "info",
-    });
-
+app.get("/books", trackFeature("books", "Fetch books route"), async (req, res) => {
     try {
         const { genre, sort } = req.query;
         const options = {
@@ -66,12 +69,7 @@ app.get("/books", async (req, res) => {
     }
 });
 
-app.get("/books/:id", async (req, res) => {
-    Sentry.setTag("feature", "books");
-    Sentry.addBreadcrumb({
-        message: `Fetch book with ID ${req.params.id}`,
-        level: "info",
-    });
+app.get("/books/:id", trackFeature("books", (req) => `Fetch book with ID ${req.params.id}`), async (req, res) => {
     const { id } = req.params;
 
 
@@ -90,12 +88,7 @@ app.get("/books/:id", async (req, res) => {
 });
 
 
-app.post("/books", async (req, res) => {
-    Sentry.setTag("feature", "books");
-    Sentry.addBreadcrumb({
-        message: "Create book route",
-        level: "info",
-    });
+app.post("/books", trackFeature("books", "Create book route"), async (req, res) => {
     const { title, genre, published_year, author_id } = req.body;
 
     if (!isNonEmptyString(title)) {
@@ -118,12 +111,7 @@ app.post("/books", async (req, res) => {
     }
 });
 
-app.put("/books/:id", async (req, res) => {
-    Sentry.setTag("feature", "books");
-    Sentry.addBreadcrumb({
-        message: `Replace book with ID ${req.params.id}`,
-        level: "info",
-    });
+app.put("/books/:id", trackFeature("books", (req) => `Replace book with ID ${req.params.id}`), async (req, res) => {
     const { id } = req.params;
     const { title, genre, published_year, author_id } = req.body;
 
@@ -155,12 +143,7 @@ app.put("/books/:id", async (req, res) => {
 });
 
 
-app.patch("/books/:id", validatePositiveIntId, async (req, res) => {
-    Sentry.setTag("feature", "books");
-    Sentry.addBreadcrumb({
-        message: `Update book with ID ${req.params.id}`,
-        level: "info",
-    });
+app.patch("/books/:id", validatePositiveIntId, trackFeature("books", (req) => `Update book with ID ${req.params.id}`), async (req, res) => {
     const { id } = req.params;
 
     if (!req.body || typeof req.body !== "object" || Object.keys(req.body).length === 0) {
@@ -217,12 +200,7 @@ app.patch("/books/:id", validatePositiveIntId, async (req, res) => {
     }
 });
 
-app.delete("/books/:id", async (req, res) => {
-    Sentry.setTag("feature", "books");
-    Sentry.addBreadcrumb({
-        message: `Delete book with ID ${req.params.id}`,
-        level: "info",
-    });
+app.delete("/books/:id", trackFeature("books", (req) => `Delete book with ID ${req.params.id}`), async (req, res) => {
     const { id } = req.params;
 
     try {
@@ -244,13 +222,7 @@ app.delete("/books/:id", async (req, res) => {
 });
 
 
-app.get("/authors", async (req, res) => {
-    Sentry.setTag("feature", "authors");
-    Sentry.addBreadcrumb({
-        message: "Fetch authors route",
-        level: "info",
-    });
-
+app.get("/authors", trackFeature("authors", "Fetch authors route"), async (req, res) => {
     try {
         const [, result] = await sequelize.query("SELECT * FROM authors ORDER BY id ASC");
         res.status(200).json(result.rows);
@@ -261,12 +233,7 @@ app.get("/authors", async (req, res) => {
     }
 });
 
-app.get("/authors/:id", validatePositiveIntId, async (req, res) => {
-    Sentry.setTag("feature", "authors");
-    Sentry.addBreadcrumb({
-        message: `Fetch author with ID ${req.params.id}`,
-        level: "info",
-    });
+app.get("/authors/:id", validatePositiveIntId, trackFeature("authors", (req) => `Fetch author with ID ${req.params.id}`), async (req, res) => {
     const { id } = req.params;
 
     try {
@@ -284,12 +251,7 @@ app.get("/authors/:id", validatePositiveIntId, async (req, res) => {
     }
 });
 
-app.post("/authors", async (req, res) => {
-    Sentry.setTag("feature", "authors");
-    Sentry.addBreadcrumb({
-        message: "Create author route",
-        level: "info",
-    });
+app.post("/authors", trackFeature("authors", "Create author route"), async (req, res) => {
     const { name } = req.body;
 
     if (!isNonEmptyString(name)) {
@@ -310,12 +272,7 @@ app.post("/authors", async (req, res) => {
     }
 });
 
-app.get("/authors/:id/books", validatePositiveIntId, async (req, res) => {
-    Sentry.setTag("feature", "authors");
-    Sentry.addBreadcrumb({
-        message: `Fetch books for author ${req.params.id}`,
-        level: "info",
-    });
+app.get("/authors/:id/books", validatePositiveIntId, trackFeature("authors", (req) => `Fetch books for author ${req.params.id}`), async (req, res) => {
     const { id } = req.params;
 
     try {
@@ -336,12 +293,7 @@ app.get("/authors/:id/books", validatePositiveIntId, async (req, res) => {
     }
 });
 
-app.post("/loans", async (req, res) => {
-    Sentry.setTag("feature", "loans");
-    Sentry.addBreadcrumb({
-        message: "Create loan route",
-        level: "info",
-    });
+app.post("/loans", trackFeature("loans", "Create loan route"), async (req, res) => {
     const { member_id, book_id } = req.body;
 
     if (!Number.isInteger(member_id) || !Number.isInteger(book_id)) {
@@ -361,12 +313,7 @@ app.post("/loans", async (req, res) => {
     }
 });
 
-app.get("/members/:id/loans", validatePositiveIntId, async (req, res) => {
-    Sentry.setTag("feature", "members");
-    Sentry.addBreadcrumb({
-        message: `Fetch loans for member ${req.params.id}`,
-        level: "info",
-    });
+app.get("/members/:id/loans", validatePositiveIntId, trackFeature("members", (req) => `Fetch loans for member ${req.params.id}`), async (req, res) => {
     const { id } = req.params;
 
     try {

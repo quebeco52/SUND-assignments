@@ -64,3 +64,21 @@ see screenshots
 ## Question: What changed in the numbers, and why? Why is it a problem when a tool reports issues in code you didn't write?
 I don't think anything changed?
 It is problem because the code that acutely needs to be analyzed gets buried.
+
+
+
+
+| Rule | File | What I changed | Tests still green? |
+| --- | --- | --- | --- |
+| Prefer top-level await over promise chain (floating promise) | `sequelize.js`, `index.js` | Replaced `.then().catch()` with `connectToDatabase()` (`async`/`await` + `try`/`catch`) and awaited it at top level | Yes |
+| Code duplication (ID check) | `index.js` | Extracted `validatePositiveIntId` middleware for `:id` routes | Yes |
+| Code duplication (string check) | `index.js` | Extracted `isNonEmptyString` helper for title/name validation | Yes |
+| Code duplication (Sentry boilerplate) | `index.js` | Extracted `trackFeature` middleware for Sentry tags and breadcrumbs | Yes |
+
+
+
+## Why run your tests after every fix, even when the change looks small?
+small changes can still cause problems
+
+## Choose one of your fixes. Is the code easier to read now? Explain why or why not.
+validatePositiveIntId: the logic now becomes the meat of the code and skips the repeated validation boilerplate

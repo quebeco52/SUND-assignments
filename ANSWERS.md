@@ -46,3 +46,21 @@ SonarQube: Finds structural, style, and security/reliability problems without ru
 Tests: Finds logic bugs that don't crash the code
 
 Sentry: Finds real world production failures
+
+
+## Question: Your package.json goes to GitHub. What could someone do with your SonarQube token if they found it there? What about a database password or a Sentry DSN?
+
+token: Someone could authenticate as you to your SonarQube server
+db pass: could connect directly to the ostgreSQL database
+DSN: could spam sentry project with fake errors
+
+## Question: Why is it better to put settings like the project key in sonar-project.properties than in a long command?
+
+It gets tracked in git
+
+##  Look at the Code tab in SonarQube. Which folders and files were scanned?
+see screenshots
+
+## Question: What changed in the numbers, and why? Why is it a problem when a tool reports issues in code you didn't write?
+I don't think anything changed?
+It is problem because the code that acutely needs to be analyzed gets buried.

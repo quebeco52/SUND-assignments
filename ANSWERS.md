@@ -1,84 +1,91 @@
-## What does docker ps show you? Which columns tell you that SonarQube is running, and on which port?
-
-It shows me the ruining containers 
-8fa998e34f29   sonarqube               "/opt/sonarqube/dock…"   2 minutes ago   Up 2 minutes   0.0.0.0:9000->9000/tcp, [::]:9000->9000/tcp        my-sonarqube
-
-## Why run SonarQube in Docker instead of installing it directly on your computer?
-Well because it now can be reused if you wanna create a new dev env, It also make a stand alone app that don't have to interact with the underlying host
-
-## Did your project pass or fail the quality gate? How many issues did SonarQube find?
-Pass one issue
 
 
-## Issue: Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator.
+1. Automation, It follows the exact same fixed schedule
 
-### File & Line: index.js, line 20
+2. Agent. The bot has a goal and must decide what information is missing
 
-testDatabaseConnection is an async function, so calling it always return a promise
-On line 20, testDatabaseConnection() is called without anything to handle the promise
+3. Automation. the workflow runs the exact same fixed sequence every night
 
+4. Automation. It is a simple fixed trigger and action rule
 
-await testDatabaseConnection();
+5. Agent. The assistant inspects multiple changing sources and decides how to combine them
 
-testDatabaseConnection().catch((err) => {
-    console.error("Database connection check failed:", err);
-});
-
-
-## whether you agree that it's a problem, and why:
-well it is a bug to not include a await, but it is already wrapping it's body in a try/catch, so it is not that big of a deal
-
-
-
-## Question: Depending on the version, SonarQube groups issues either by the quality they affect (Security, Reliability, Maintainability) or by type (Vulnerability, Bug, Code Smell). Explain each of the three groups your SonarQube uses, with an example:
-
-Security: Code that makes your code vulnerable to malicious actors. example: hardcoded API keys
-
-Reliability: Bugs or risky logic that can create unintended consequences. example: async function without await
-
-Maintainability: Code that works, but is not easy to read, understand or test. example Duplicated code blocks across routes or unused variables
-
-
-
-## Question: SonarQube, your tests and Sentry all help you find problems. What does each one find that the others can't?
-SonarQube: Finds structural, style, and security/reliability problems without ruining the code
-
-Tests: Finds logic bugs that don't crash the code
-
-Sentry: Finds real world production failures
-
-
-## Question: Your package.json goes to GitHub. What could someone do with your SonarQube token if they found it there? What about a database password or a Sentry DSN?
-
-token: Someone could authenticate as you to your SonarQube server
-db pass: could connect directly to the ostgreSQL database
-DSN: could spam sentry project with fake errors
-
-## Question: Why is it better to put settings like the project key in sonar-project.properties than in a long command?
-
-It gets tracked in git
-
-##  Look at the Code tab in SonarQube. Which folders and files were scanned?
-see screenshots
-
-## Question: What changed in the numbers, and why? Why is it a problem when a tool reports issues in code you didn't write?
-I don't think anything changed?
-It is problem because the code that acutely needs to be analyzed gets buried.
+6. Automation. Every form submission triggers the same two predetermined steps in the same order
 
 
 
 
-| Rule | File | What I changed | Tests still green? |
+
+
+
+
+
+
+## Question: Scenario 3 uses AI but is still not an agent. Explain why, using the video's example of the Reddit summary.
+
+Is still an automation because every step is decided in advance.
+
+## Question: The video says: "Build the simplest thing that works." Why is an automation often a better choice than an agent? Think about cost, speed, and how easy it is to test.
+
+An automation is often better because it is cheaper, faster, and much easier to test and debug.
+
+## Question: What happened when the context window was 1, and when there was no memory? Explain what the context window length means.
+
+The context window length sets how many recent conversation exchanges Simple Memory keeps.
+
+## Question: Why not just set the context window to 1000? Think about what the model has to read on every message, and what that costs.
+
+Because the LLM has to re-read the entire saved conversation history for every new message.
+
+## Question: Which questions made the agent use the weather tool, and which didn't? Nobody told the agent when to use the tool. How did it decide?
+
+when prompting get the weather it used the weather tool, but prompting what is 1 + 1 it did not use the code.
+
+## Question: This is the difference between an agent and the automation from Exercise 1. Explain it using what you saw in the logs.
+
+n an automation, every step executes in a fixed sequence regardless of the input. I could se the AI going down the path
+
+## Question: Read the recap about MCP again. In this exercise, the weather tool only works inside n8n. What would change if OpenWeatherMap offered an MCP server instead? Name one advantage.
+
+OpenWeatherMap's tools would be exposed using the open MCP standard, so it could be used in mant other tools.
+
+## Question: Explain API, HTTP request and function in your own words. Use the vending machine from the video, and one example from your own Express API.
+
+API: is the keypad on the vending machine, on express the route
+HTTP request: acutely pressing the bottoms, on express it is sending a get
+Function: is what what the vending machine does when pressed, in express the would be GET /books and what happens when it is reached.
+
+## Question: What happened to your agent's answer when you changed the tool's description to something vague, like tool? Try it, then change it back.
+
+It did not understand how to get it most of the time
+
+## Question: Compare the answers from the bad prompt and the structured prompt. Give two concrete differences.
+
+With help the user It was kind of vague and with a structured prompt I gave a structured respond.
+
+## Question: Which of the six parts made the biggest difference for your agent, and why?
+
+Output, because it structured all in a noticeable way.
+
+## Question: Your prompt is always read by the agent, on every message. A skill is only read when a task needs it. Imagine your agent could do ten different jobs, each with a long set of rules. Why would skills be better than one huge prompt?
+
+It is better because it will only read the skill when they need it
+
+## Question: One of your errors may not have stopped the workflow. Instead, the agent just gave a strange or wrong answer. Why is that kind of error more dangerous than a red error message?
+
+A red error message stops the workflow immediately and makes it obvious that something failed.
+
+## Question: You learned to read error reports in the Sentry week. What is similar about finding errors in n8n, and what is different?
+
+Similar: Both give you a central log/history of runs and failures.
+Different: Sentry captures live code exceptions and shows JavaScript stack traces with exact file names.
+
+
+
+
+
+| What I broke | Which node failed | Error message (short) | What the message told me |
 | --- | --- | --- | --- |
-| Prefer top-level await over promise chain (floating promise) | `sequelize.js`, `index.js` | Replaced `.then().catch()` with `connectToDatabase()` (`async`/`await` + `try`/`catch`) and awaited it at top level | Yes |
-| Code duplication (ID check) | `index.js` | Extracted `validatePositiveIntId` middleware for `:id` routes | Yes |
-| Code duplication (string check) | `index.js` | Extracted `isNonEmptyString` helper for title/name validation | Yes |
-| Code duplication (Sentry boilerplate) | `index.js` | Extracted `trackFeature` middleware for Sentry tags and breadcrumbs | Yes |
-
-
-
-## Why run your tests after every fix, even when the change looks small?
-small changes can still cause problems
-
-## Choose one of your fixes. Is the code easier to read now? Explain why or why not.
-validatePositiveIntId: the logic now becomes the meat of the code and skips the repeated validation boilerplate
+| Get weather api | Get weather | NodeApiError: Authorization failed | I could not Authorization |
+| city format | Get weather | odeApiError: The resource you are requesting could not be found | I cant find the info |
+| the url to Get air quality | Get air quality | The connection cannot be established | it cant reach the url |

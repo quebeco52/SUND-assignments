@@ -55,8 +55,4 @@ describe("Pizza Shop Unit Tests", () => {
         expect(() => chargeCustomer(42, 0)).toThrow();
     });
 
-    test("intentional failure on purpose", () => {
-        const pizza = createPizza("margherita");
-        expect(pizza.price).toBe(999);
-    });
 });

@@ -54,4 +54,5 @@ describe("Pizza Shop Unit Tests", () => {
     test("chargeCustomer throws when amount is 0", () => {
         expect(() => chargeCustomer(42, 0)).toThrow();
     });
+
 });

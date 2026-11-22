@@ -18,6 +18,8 @@ It catch the bug before it makes it in to main
 
 ## Question: Would this step have caught the possibly null bug from Week 11, Exercise 9?
 
+No because we wrote that one in js
+
 ## Question: What's the difference between npm ci and npm install , and why does CI use npm ci ?
 
 ## Question: What does branch protection do that CI alone can't?

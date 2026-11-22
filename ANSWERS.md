@@ -22,4 +22,10 @@ No because we wrote that one in js
 
 ## Question: What's the difference between npm ci and npm install , and why does CI use npm ci ?
 
+npm install reads package.json and "update" it and updates package-lock.json and keeps node_modules.
+
+npm ci deletes node_modules and installs the exact versions from package-lock.json and does not touch package-lock.json
+
+Reproducible builds. it will have the exact versions
+
 ## Question: What does branch protection do that CI alone can't?

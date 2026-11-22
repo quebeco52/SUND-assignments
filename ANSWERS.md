@@ -29,3 +29,5 @@ npm ci deletes node_modules and installs the exact versions from package-lock.js
 Reproducible builds. it will have the exact versions
 
 ## Question: What does branch protection do that CI alone can't?
+
+CI alone reports, Branch protection protects the branch by enforcing  policy

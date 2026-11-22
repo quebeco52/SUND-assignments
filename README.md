@@ -1,0 +1,1 @@
+[![CI](https://github.com/quebeco52/SUND-assignments/actions/workflows/ci.yml/badge.svg?branch=week12%2Fci)](https://github.com/quebeco52/SUND-assignments/actions/workflows/ci.yml)

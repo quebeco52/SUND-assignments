@@ -55,4 +55,8 @@ describe("Pizza Shop Unit Tests", () => {
         expect(() => chargeCustomer(42, 0)).toThrow();
     });
 
+    test("see margherita price", () =>{
+        expect(createPizza("margherita").price).toBe(999);
+    })
+
 });

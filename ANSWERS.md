@@ -20,6 +20,10 @@ this make so only a trusted frontend can make make requests to the API. when Onl
 
 ## Question: Why does React need a key on every item in a list? Why is book.id a better key than the index, especially once you can delete books?
 
+It need a key to effectively modified the DOM. An index change every time every time a item is deleted with can make handling DOM hard
+
 
 
 ## Question: Explain in your own words what useState and useEffect do in this component. What would happen if you removed the empty array [] from useEffect ?
+
+useState stores reactive data and triggers a re-render setBooks is called. [] tells React to run it only once

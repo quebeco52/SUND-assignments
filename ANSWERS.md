@@ -27,3 +27,16 @@ It need a key to effectively modified the DOM. An index change every time every 
 ## Question: Explain in your own words what useState and useEffect do in this component. What would happen if you removed the empty array [] from useEffect ?
 
 useState stores reactive data and triggers a re-render setBooks is called. [] tells React to run it only once
+
+
+## Question: What does event.preventDefault() do? Remove it and test. What happens, and why?
+
+It stops default like in this cases reloading on submitting form, When removed, the page reloads.
+
+## Question: Why does the dropdown use the author's id as value and not the name? What could go wrong if the user typed the author_id by hand?
+
+Because authors can have the same name but not the same id. if the user typed the author_id by hand they could easly mistype and they would not know.
+
+## Question: Your book rules now live in two places: src/schemas.ts in the API and client/src/schemas.ts in the client. What could go wrong when someone changes one and forgets the other? Can you think of a way to keep them in one place?
+
+wey can go out of sync allowing input on the frontend that will be rejected on the backend. It could be mitigated with a shared zod file.

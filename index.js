@@ -1,3 +1,4 @@
+import cors from "cors";
 import "./instrument.js";
 import * as Sentry from "@sentry/node";
 import express from "express";
@@ -13,6 +14,7 @@ await connectToDatabase();
 const app = express();
 
 app.use(express.json());
+app.use(cors({ origin: "http://localhost:5173" }));
 
 function validatePositiveIntId(req, res, next) {
     const id = Number(req.params.id);

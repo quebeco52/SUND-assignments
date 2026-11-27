@@ -40,3 +40,14 @@ Because authors can have the same name but not the same id. if the user typed th
 ## Question: Your book rules now live in two places: src/schemas.ts in the API and client/src/schemas.ts in the client. What could go wrong when someone changes one and forgets the other? Can you think of a way to keep them in one place?
 
 wey can go out of sync allowing input on the frontend that will be rejected on the backend. It could be mitigated with a shared zod file.
+
+
+
+## Question: Explain what books.filter((book) => book.id !== id) does, step by step. Why do we make a new array instead of removing the book from the old one?
+
+.filter loops throw all the books and looks if book.id !== id and then copies them to a new array, we do this to stop react to rerender
+
+
+## Question: What happened when you deleted a book with a loan, and why? What should the user see on the page in that case?
+
+we get an error because we have a key pointed to that book, The user should get an error that explain this

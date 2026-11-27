@@ -30,6 +30,54 @@ function App() {
   const [publishedYear, setPublishedYear] = useState("");
   const [authorId, setAuthorId] = useState("");
   const [errors, setErrors] = useState<BookFormErrors>({});
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editGenre, setEditGenre] = useState("");
+  const [editPublishedYear, setEditPublishedYear] = useState("");
+  const [editAuthorId, setEditAuthorId] = useState("");
+  const [editErrors, setEditErrors] = useState<BookFormErrors>({});
+
+
+  const startEditing = (book: Book) => {
+    setEditingId(book.id);
+    setEditTitle(book.title);
+    setEditGenre(book.genre ?? "");
+    setEditPublishedYear(
+      book.published_year ? String(book.published_year) : ""
+    );
+    setEditAuthorId(book.author_id ? String(book.author_id) : "");
+    setEditErrors({});
+  };
+
+  const cancelEditing = () => {
+    setEditingId(null);
+    setEditErrors({});
+  };
+
+  const handleUpdate = async (
+    event: FormEvent<HTMLFormElement>,
+    id: number
+  ) => {
+    event.preventDefault();
+
+    const result = bookFormSchema.safeParse({
+      title: editTitle,
+      genre: editGenre,
+      published_year: editPublishedYear,
+      author_id: editAuthorId,
+    });
+
+    if (!result.success) {
+      setEditErrors(z.flattenError(result.error).fieldErrors);
+      return;
+    }
+
+    setEditErrors({});
+    await axios.put(`http://localhost:3000/books/${id}`, result.data);
+    await fetchBooks();
+    setEditingId(null);
+  };
+
 
   const fetchBooks = async () => {
     const response = await axios.get<Book[]>("http://localhost:3000/books");
@@ -152,11 +200,91 @@ function App() {
             <ul>
               {books.map((book) => (
                 <li key={book.id}>
-                  {book.title} by {book.Author?.name ?? "Unknown author"} (
-                  {book.published_year ?? "N/A"}){" "}
-                  <button type="button" onClick={() => handleDelete(book.id)}>
-                    Delete
-                  </button>
+                  {editingId === book.id ? (
+                    <form
+                      onSubmit={(e) => handleUpdate(e, book.id)}
+                      noValidate
+                    >
+                      <input
+                        type="text"
+                        value={editTitle}
+                        onChange={(e) => setEditTitle(e.target.value)}
+                        placeholder="Title"
+                      />
+                      {editErrors.title?.[0] && (
+                        <span style={{ color: "red" }}>
+                          {" "}
+                          {editErrors.title[0]}
+                        </span>
+                      )}
+
+                      <input
+                        type="text"
+                        value={editGenre}
+                        onChange={(e) => setEditGenre(e.target.value)}
+                        placeholder="Genre"
+                      />
+                      {editErrors.genre?.[0] && (
+                        <span style={{ color: "red" }}>
+                          {" "}
+                          {editErrors.genre[0]}
+                        </span>
+                      )}
+
+                      <input
+                        type="number"
+                        value={editPublishedYear}
+                        onChange={(e) => setEditPublishedYear(e.target.value)}
+                        placeholder="Year"
+                      />
+                      {editErrors.published_year?.[0] && (
+                        <span style={{ color: "red" }}>
+                          {" "}
+                          {editErrors.published_year[0]}
+                        </span>
+                      )}
+
+                      <select
+                        value={editAuthorId}
+                        onChange={(e) => setEditAuthorId(e.target.value)}
+                      >
+                        <option value="">-- Choose an author --</option>
+                        {authors.map((author) => (
+                          <option key={author.id} value={author.id}>
+                            {author.name}
+                          </option>
+                        ))}
+                      </select>
+                      {editErrors.author_id?.[0] && (
+                        <span style={{ color: "red" }}>
+                          {" "}
+                          {editErrors.author_id[0]}
+                        </span>
+                      )}
+
+                      <button type="submit">Save</button>
+                      <button type="button" onClick={cancelEditing}>
+                        Cancel
+                      </button>
+                    </form>
+                  ) : (
+                    <>
+                      {book.title} by {book.Author?.name ?? "Unknown author"} (
+                      {book.published_year ?? "N/A"}){" "}
+                      <button
+                        type="button"
+                        onClick={() => startEditing(book)}
+                      >
+                        Edit
+                      </button>{" "}
+                      <button
+                        type="button"
+                        onClick={() => handleDelete(book.id)}
+                      >
+                        Delete
+                      </button>
+                    </>
+                  )}
                 </li>
               ))}
             </ul>

@@ -113,32 +113,46 @@ app.post("/books", trackFeature("books", "Create book route"), async (req, res) 
     }
 });
 
-app.put("/books/:id", trackFeature("books", (req) => `Replace book with ID ${req.params.id}`), async (req, res) => {
+
+app.put("/books/:id", validatePositiveIntId, trackFeature("books", (req) => `Replace book with ID ${req.params.id}`), async (req, res) => {
     const { id } = req.params;
     const { title, genre, published_year, author_id } = req.body;
 
-    if (!isNonEmptyString(title)) {
-        return res.status(400).json({ error: "Title is required" });
+    const currentYear = new Date().getFullYear();
+    if (
+        !isNonEmptyString(title) ||
+        !isNonEmptyString(genre) ||
+        !Number.isInteger(published_year) ||
+        published_year < 1 ||
+        published_year > currentYear ||
+        !Number.isInteger(author_id) ||
+        author_id <= 0
+    ) {
+        return res.status(400).json({
+            error: "Valid title, genre, published_year, and author_id are all required",
+        });
     }
 
     try {
         const book = await Book.findByPk(id);
 
-        // 404 check
         if (!book) {
             return res.status(404).json({ error: "Book not found" });
         }
 
         await book.update({
             title: title.trim(),
-            genre: genre ?? book.genre,
-            published_year: published_year ?? book.published_year,
-            author_id: author_id ?? book.author_id,
+            genre: genre.trim(),
+            published_year,
+            author_id,
         });
 
         res.status(200).json(book);
     } catch (err) {
         reportError(err, "books");
+        if (err.parent?.code === "23503") {
+            return res.status(400).json({ error: "Invalid author_id." });
+        }
         console.error("Error updating book:", err);
         res.status(500).json({ error: "Failed to update book" });
     }

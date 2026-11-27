@@ -37,8 +37,8 @@ const { default: app } = await import("../index.js");
 describe("Library Express API", () => {
     beforeEach(() => {
         vi.clearAllMocks();
-        vi.spyOn(console, "error").mockImplementation(() => {});
-        vi.spyOn(console, "log").mockImplementation(() => {});
+        vi.spyOn(console, "error").mockImplementation(() => { });
+        vi.spyOn(console, "log").mockImplementation(() => { });
     });
 
     afterEach(() => {
@@ -132,12 +132,22 @@ describe("Library Express API", () => {
             });
         });
 
-        it("PUT /books/:id validates title, returns 404 if missing, and updates existing book", async () => {
+        it("PUT /books/:id validates all fields, returns 404 if missing, and replaces existing book", async () => {
             const invalid = await request(app).put("/books/1").send({ title: "" });
             expect(invalid.status).toBe(400);
 
+            const missingField = await request(app).put("/books/1").send({ title: "Only Title" });
+            expect(missingField.status).toBe(400);
+
+            const validBody = {
+                title: "  New  ",
+                genre: "Sci-Fi",
+                published_year: 2020,
+                author_id: 2,
+            };
+
             mockBook.findByPk.mockResolvedValueOnce(null);
-            const missing = await request(app).put("/books/1").send({ title: "Updated" });
+            const missing = await request(app).put("/books/1").send(validBody);
             expect(missing.status).toBe(404);
 
             const bookRecord = {
@@ -145,17 +155,17 @@ describe("Library Express API", () => {
                 title: "Old",
                 genre: "Fantasy",
                 published_year: 2000,
-                author_id: 2,
+                author_id: 1,
                 update: vi.fn().mockResolvedValue(undefined),
             };
             mockBook.findByPk.mockResolvedValueOnce(bookRecord);
 
-            const updated = await request(app).put("/books/1").send({ title: "  New  " });
+            const updated = await request(app).put("/books/1").send(validBody);
             expect(updated.status).toBe(200);
             expect(bookRecord.update).toHaveBeenCalledWith({
                 title: "New",
-                genre: "Fantasy",
-                published_year: 2000,
+                genre: "Sci-Fi",
+                published_year: 2020,
                 author_id: 2,
             });
         });

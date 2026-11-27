@@ -51,3 +51,13 @@ wey can go out of sync allowing input on the frontend that will be rejected on t
 ## Question: What happened when you deleted a book with a loan, and why? What should the user see on the page in that case?
 
 we get an error because we have a key pointed to that book, The user should get an error that explain this
+
+
+
+## Question: What's the difference between PUT and PATCH ? What happens with PUT if the client forgets to send genre ? And with PATCH ?
+
+Put replaces the resource, PATCH just updates it. With Put we get an error, with Patch it just leaves it unchanged.
+
+## Question: Why does the edit form fit PUT better than PATCH ? Can you think of a button on the page where PATCH would fit better?
+
+Well in edit we send all the values together so it fits PUT, Patch would fit better if we wanted to just change on thing like add a Favorite future or something
